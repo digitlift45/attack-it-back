@@ -11,7 +11,7 @@ import { createDust } from './effects/particles.js';
 export function createMenuScene(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  resize();
+  renderer.setSize(canvas.clientWidth || window.innerWidth, canvas.clientHeight || window.innerHeight, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.60;
@@ -228,12 +228,11 @@ export function createMenuScene(canvas) {
     const w = canvas.clientWidth || window.innerWidth;
     const h = canvas.clientHeight || window.innerHeight;
     renderer.setSize(w, h, false);
-    if (camera) {
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    }
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
   }
 
+  resize();
   window.addEventListener('resize', resize);
   frame();
 
