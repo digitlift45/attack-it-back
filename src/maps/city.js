@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { addGround, applyAtmosphere, addBoundaryObstacles, addBoundarySigns, getCautionMaterial } from './_shared.js';
+import { addGround, applyAtmosphere, addBoundaryObstacles, addBoundarySigns, getCautionMaterial } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { createEmbers, createDust } from '../effects/particles.js';
 

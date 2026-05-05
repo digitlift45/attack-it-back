@@ -62,6 +62,16 @@ Then open <http://localhost:8000> in Chrome / Edge / Firefox / Safari.
 
 Click a map card to start. Your mouse will be captured. Press **ESC** to pause.
 
+## Deploy
+
+The project is 100% static — no build step, no bundler, no server‑side code.
+Any static host works: GitHub Pages, Netlify, Cloudflare Pages, S3, etc.
+
+For GitHub Pages, just push the repo and enable Pages on the `main` branch
+from the root (`/`). All paths in the project are relative, all module imports
+use the `.js` extension, and no filenames start with `_`, so the site works
+under any subpath (like `/your-repo/`) with no special configuration.
+
 ## Controls
 
 | Key            | Action                |
@@ -103,7 +113,7 @@ shooter-game/
    │  └─ particles.js  # dust / snow / leaves / embers
    └─ maps/
       ├─ index.js      # routes mapId -> builder
-      ├─ _shared.js    # ground helpers, terrain helper, atmosphere helper
+      ├─ shared.js     # ground helpers, terrain helper, atmosphere helper
       ├─ city.js
       ├─ forest.js
       ├─ archipelago.js
