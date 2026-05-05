@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATTACK IT BACK — FPS</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- HOME SCREEN -->
+  <div id="home-screen" class="screen">
+    <canvas id="menu-bg"></canvas>
+    <div class="home-overlay-grad"></div>
+    <div class="home-inner">
+      <div class="home-top-bar">
+        <button id="btn-settings-open" class="icon-btn" title="Settings">⚙️ SETTINGS</button>
+      </div>
+      <div class="hero">
+        <div class="hero-text">
+          <h1 class="title">ATTACK IT BACK</h1>
+          <p class="subtitle">Pick a map. Find chests. Stay alive.</p>
+          <div class="stats-tag">
+            <span id="home-coins">0</span> KILLS (COINS)
+          </div>
+        </div>
+        <div id="char-preview"></div>
+        <div id="shop-panel">
+          <h3>SHOP</h3>
+          <div class="shop-items">
+            <button class="shop-btn" id="buy-hp" data-cost="5">
+              <span>HP BOOST (+300 MAX HP)</span>
+              <span class="cost">5 KILLS</span>
+            </button>
+            <button class="shop-btn" id="buy-shades" data-cost="20">
+              <span>COOL SHADES</span>
+              <span class="cost">20 KILLS</span>
+            </button>
+            <button class="shop-btn" id="buy-hat" data-cost="30">
+              <span>TACTICAL HELMET</span>
+              <span class="cost">30 KILLS</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-grid">
+        <button class="map-card city" data-map="city">
+          <div class="map-art" style="background-image: url('assets/thumb-city.png');"></div>
+          <div class="map-name">🏙️ CITY</div>
+          <div class="map-desc">Concrete jungle, tight alleys</div>
+        </button>
+
+        <button class="map-card forest" data-map="forest">
+          <div class="map-art" style="background-image: url('assets/thumb-forest.png');"></div>
+          <div class="map-name">🌲 FOREST</div>
+          <div class="map-desc">Dense woods, hidden chests</div>
+        </button>
+
+        <button class="map-card archipelago" data-map="archipelago">
+          <div class="map-art" style="background-image: url('assets/thumb-archipelago.png');"></div>
+          <div class="map-name">🏝️ ARCHIPELAGO</div>
+          <div class="map-desc">Small islands, open water</div>
+        </button>
+
+        <button class="map-card mountain" data-map="mountain">
+          <div class="map-art" style="background-image: url('assets/thumb-mountain.png');"></div>
+          <div class="map-name">⛰️ MOUNTAIN</div>
+          <div class="map-desc">Snowy peaks, long sightlines</div>
+        </button>
+
+        <button class="map-card desert" data-map="desert">
+          <div class="map-art" style="background-image: url('assets/thumb-desert.png');"></div>
+          <div class="map-name">🏜️ DESERT</div>
+          <div class="map-desc">Sand dunes, rock pillars</div>
+        </button>
+
+        <button class="map-card swamp" data-map="swamp">
+          <div class="map-art" style="background-image: url('assets/thumb-swamp.png');"></div>
+          <div class="map-name">🐊 SWAMP</div>
+          <div class="map-desc">Murky water, dead trees</div>
+        </button>
+
+        <button class="map-card volcano" data-map="volcano">
+          <div class="map-art" style="background-image: url('assets/thumb-volcano.png');"></div>
+          <div class="map-name">🌋 VOLCANO</div>
+          <div class="map-desc">Lava lake, dark red sky</div>
+        </button>
+
+        <button class="map-card ruins" data-map="ruins">
+          <div class="map-art" style="background-image: url('assets/thumb-ruins.png');"></div>
+          <div class="map-name">🏛️ RUINS</div>
+          <div class="map-desc">Ancient pillars, moss</div>
+        </button>
+      </div>
+
+      <div class="controls-help">
+        <div><b>WASD</b> move &nbsp;·&nbsp; <b>Mouse</b> look &nbsp;·&nbsp; <b>Click</b> shoot &nbsp;·&nbsp; <b>Space</b> jump &nbsp;·&nbsp; <b>R</b> reload &nbsp;·&nbsp; <b>E</b> open chest &nbsp;·&nbsp; <b>1/2/3</b> switch gun &nbsp;·&nbsp; <b>ESC</b> pause</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="game-screen" class="screen hidden">
+    <canvas id="canvas"></canvas>
+
+    <div id="hud">
+      <div id="fps-counter" class="hidden">60 FPS</div>
+      <div id="crosshair">
+        <div class="cx-dot"></div>
+        <div class="cx-line cx-top"></div>
+        <div class="cx-line cx-bottom"></div>
+        <div class="cx-line cx-left"></div>
+        <div class="cx-line cx-right"></div>
+      </div>
+      <div id="hit-marker">
+        <span class="hm tl"></span>
+        <span class="hm tr"></span>
+        <span class="hm bl"></span>
+        <span class="hm br"></span>
+      </div>
+      <div id="kill-marker">
+        <span class="hm tl"></span>
+        <span class="hm tr"></span>
+        <span class="hm bl"></span>
+        <span class="hm br"></span>
+      </div>
+
+      <div id="minimap-wrap">
+        <div class="minimap-header">
+          <span class="minimap-label">MAP</span>
+          <span class="minimap-name" id="minimap-name">—</span>
+        </div>
+        <canvas id="minimap"></canvas>
+        <div class="minimap-legend">
+          <span><i class="dot you"></i>YOU</span>
+          <span><i class="dot enemy"></i>ENEMY</span>
+          <span><i class="dot chest"></i>CHEST</span>
+        </div>
+      </div>
+
+      <div id="hud-bottom-left">
+        <div class="hp-row">
+          <div class="hp-label">HP</div>
+          <div class="hp-bar"><div id="hp-fill"></div></div>
+          <div id="hp-text">100</div>
+        </div>
+      </div>
+
+      <div id="hud-top">
+        <div class="hud-stat"><span class="hud-stat-label">WAVE</span><span id="wave-num">1</span></div>
+        <div class="hud-stat"><span class="hud-stat-label">KILLS</span><span id="kill-count">0</span></div>
+        <div class="hud-stat"><span class="hud-stat-label">ENEMIES</span><span id="enemy-count">0</span></div>
+      </div>
+
+      <div id="controls-panel">
+        <div class="cp-header">
+          <span class="cp-label">CONTROLS</span>
+          <button id="cp-toggle" type="button" title="Hide / show">−</button>
+        </div>
+        <div class="cp-body">
+          <div class="cp-row"><span class="cp-keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span class="cp-action">Move</span></div>
+          <div class="cp-row"><span class="cp-keys"><kbd class="wide">Mouse</kbd></span><span class="cp-action">Look</span></div>
+          <div class="cp-row"><span class="cp-keys"><kbd class="wide">L-Click</kbd></span><span class="cp-action">Shoot</span></div>
+          <div class="cp-row"><span class="cp-keys"><kbd class="wide">Space</kbd></span><span class="cp-action">Jump</span></div>
+          <div class="cp-row"><span class="cp-keys"><kbd>R</kbd></span><span class="cp-action">Reload</span></div>
+          <div class="cp-row"><span class="cp-keys"><kbd>E</kbd></span><span class="cp-action">Open chest</span></div>
+          <div class="cp-row"><span class="cp-keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd></span><span class="cp-action">Weapon</span></div>
+          <div class="cp-row"><span class="cp-keys"><kbd class="wide">ESC</kbd></span><span class="cp-action">Pause</span></div>
+        </div>
+      </div>
+
+      <div id="inventory-bar">
+        <div class="inv-slot" id="slot-1">
+          <div class="inv-key">1</div>
+          <div class="inv-name">FISTS</div>
+          <div class="inv-ammo">∞</div>
+        </div>
+        <div class="inv-slot" id="slot-2">
+          <div class="inv-key">2</div>
+          <div class="inv-name">PISTOL</div>
+          <div class="inv-ammo">—</div>
+        </div>
+        <div class="inv-slot" id="slot-3">
+          <div class="inv-key">3</div>
+          <div class="inv-name">SHOTGUN</div>
+          <div class="inv-ammo">—</div>
+        </div>
+        <div class="inv-slot" id="slot-4">
+          <div class="inv-key">4</div>
+          <div class="inv-name">RIFLE</div>
+          <div class="inv-ammo">—</div>
+        </div>
+      </div>
+
+      <div id="prompt" class="hidden">Press <b>E</b> to open chest</div>
+      <div id="hit-flash"></div>
+      <div id="damage-vignette"></div>
+      <div id="drown-vignette"></div>
+      <div id="pickup-toast"></div>
+    </div>
+
+    <!-- Pause menu -->
+    <div id="pause-menu" class="overlay hidden">
+      <div class="overlay-card">
+        <h2>PAUSED</h2>
+        <button id="btn-resume" class="big-btn">Resume</button>
+        <button id="btn-settings-pause" class="big-btn ghost">Settings</button>
+        <button id="btn-quit" class="big-btn ghost">Quit to Menu</button>
+      </div>
+    </div>
+
+    <!-- Game over -->
+    <div id="game-over" class="overlay hidden">
+      <div class="overlay-card">
+        <h2>YOU DIED</h2>
+        <p>You survived <span id="final-wave">1</span> waves with <span id="final-kills">0</span> kills.</p>
+        <button id="btn-retry" class="big-btn">Try Again</button>
+        <button id="btn-quit2" class="big-btn ghost">Quit to Menu</button>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-menu" class="overlay hidden">
+      <div class="overlay-card settings-card">
+        <h2>SETTINGS</h2>
+        <div class="settings-grid">
+          <div class="setting-row">
+            <label for="set-fov">Field of View (<span id="fov-val">78</span>)</label>
+            <input type="range" id="set-fov" min="60" max="120" value="78" step="1">
+          </div>
+          <div class="setting-row">
+            <label for="set-sens">Mouse Sensitivity (<span id="sens-val">1.0</span>)</label>
+            <input type="range" id="set-sens" min="0.1" max="3.0" value="1.0" step="0.1">
+          </div>
+          <div class="setting-row">
+            <label for="set-quality">Graphics Quality</label>
+            <select id="set-quality">
+              <option value="low">Low (Fast)</option>
+              <option value="medium">Medium</option>
+              <option value="high" selected>High (Beautiful)</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <label for="set-bob">Head Bob (Camera Sway)</label>
+            <input type="checkbox" id="set-bob" checked>
+          </div>
+          <div class="setting-row">
+            <label for="set-fps">Show FPS Counter</label>
+            <input type="checkbox" id="set-fps">
+          </div>
+          <div class="setting-row">
+            <label for="set-brightness">Brightness (<span id="brightness-val">100</span>%)</label>
+            <input type="range" id="set-brightness" min="50" max="150" value="100" step="5">
+          </div>
+          <div class="setting-row">
+            <label for="set-volume">Volume (<span id="volume-val">100</span>%)</label>
+            <input type="range" id="set-volume" min="0" max="100" value="100" step="5">
+          </div>
+          <div class="setting-row">
+            <label for="set-difficulty">Difficulty</label>
+            <select id="set-difficulty">
+              <option value="easy">Easy</option>
+              <option value="normal" selected>Normal</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+        <button id="btn-settings-close" class="big-btn">Apply & Close</button>
+      </div>
+    </div>
+
+    <!-- Click-to-start (after pointer-lock loss) -->
+    <div id="click-to-play" class="overlay hidden">
+      <div class="overlay-card">
+        <h2>Click to play</h2>
+        <p>Mouse will be captured.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
