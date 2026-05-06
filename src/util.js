@@ -44,4 +44,48 @@ export function aabbFromBox(cx, cz, sx, sz, maxY = Infinity) {
   return { minX: cx - sx/2, maxX: cx + sx/2, minZ: cz - sz/2, maxZ: cz + sz/2, maxY };
 }
 
+/**
+ * Returns an (x, z) position guaranteed to be clear of all obstacles. Tries
+ * `start` first; if blocked, spirals outward in concentric rings until it
+ * finds an open spot inside `bounds`. Used so the player never spawns clipped
+ * into a wall, no matter how the map procedurally generated.
+ */
+export function findClearSpawn(start, bounds, obstacles, opts = {}) {
+  const radius      = opts.radius      ?? 0.6;
+  const padding     = opts.padding     ?? 0.4;
+  const boundaryPad = opts.boundaryPad ?? 6;
+  const maxRings    = opts.maxRings    ?? 60;
+  const ringStep    = opts.ringStep    ?? 1.5;
+  const checkR      = radius + padding;
+
+  function inBounds(x, z) {
+    return (
+      x > bounds.minX + boundaryPad &&
+      x < bounds.maxX - boundaryPad &&
+      z > bounds.minZ + boundaryPad &&
+      z < bounds.maxZ - boundaryPad
+    );
+  }
+  function isClear(x, z) {
+    return inBounds(x, z) && !collidesCircleAabb(x, 0, z, checkR, obstacles);
+  }
+
+  if (isClear(start.x, start.z)) return { x: start.x, z: start.z };
+
+  for (let ring = 1; ring <= maxRings; ring++) {
+    const r = ring * ringStep;
+    const samples = Math.max(8, Math.floor((2 * Math.PI * r) / ringStep));
+    for (let i = 0; i < samples; i++) {
+      const a = (i / samples) * Math.PI * 2;
+      const x = start.x + Math.cos(a) * r;
+      const z = start.z + Math.sin(a) * r;
+      if (isClear(x, z)) return { x, z };
+    }
+  }
+  return {
+    x: clamp(start.x, bounds.minX + boundaryPad, bounds.maxX - boundaryPad),
+    z: clamp(start.z, bounds.minZ + boundaryPad, bounds.maxZ - boundaryPad),
+  };
+}
+
 export function tmpVec3() { return new THREE.Vector3(); }

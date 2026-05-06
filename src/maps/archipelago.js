@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applyAtmosphere, addBoundaryObstacles, addBoundarySigns } from './shared.js';
+import { applyAtmosphere, addBoundaryObstacles, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
 import { createWater } from '../effects/water.js';
@@ -113,8 +113,19 @@ export function buildArchipelago(scene, renderer) {
     addBridge(scene, obstacles, colliders, main.x, main.z, islands[i].x, islands[i].z);
   }
 
-  // Player starts on the main island
-  const playerStart = { x: main ? main.x : 0, z: main ? main.z : 0 };
+  // Player home: a cabin on the main island, with a small beach camp.
+  const baseX = main ? main.x : 0;
+  const baseZ = main ? main.z : 0;
+  const cabin = addCabin(scene, baseX, baseZ, { facing: 0, groundHeight: () => 0.3 });
+  obstacles.push(...cabin.obstacles);
+  colliders.push(...cabin.colliders);
+  const tickables = [];
+  addCampProps(scene, { x: baseX, z: baseZ }, {
+    rng, count: 7, inner: 6, radius: Math.min(14, main ? main.r * 1.6 : 14),
+    groundHeight: () => 0.3,
+    obstacles, colliders, tickables,
+    avoid: [{ x: baseX, z: baseZ, r: 6 }],
+  });
 
   addBoundaryObstacles(obstacles, bounds);
   addBoundarySigns(scene, bounds, null);
@@ -124,10 +135,10 @@ export function buildArchipelago(scene, renderer) {
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
-    playerStart, bounds,
+    playerStart: cabin.spawnInside, bounds,
     atmo,
     water,
-    particles: [dust],
+    particles: [dust, ...tickables],
   };
 }
 

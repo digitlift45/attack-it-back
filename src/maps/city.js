@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { addGround, applyAtmosphere, addBoundaryObstacles, addBoundarySigns, getCautionMaterial } from './shared.js';
+import { addGround, applyAtmosphere, addBoundaryObstacles, addBoundarySigns, getCautionMaterial, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { createEmbers, createDust } from '../effects/particles.js';
 
@@ -257,11 +257,23 @@ export function buildCity(scene, renderer) {
   // Street lamps in the middle plaza
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2;
-    const r = 6;
+    const r = 9;
     const x = Math.cos(a) * r;
     const z = Math.sin(a) * r;
     addLamp(scene, x, z);
   }
+
+  // Player home: a survivors' shack set up in the central plaza, with a
+  // small camp of supplies around it (campfires, crates, lanterns).
+  const cabin = addCabin(scene, 0, 0, { facing: 0 });
+  obstacles.push(...cabin.obstacles);
+  colliders.push(...cabin.colliders);
+  const tickables = [];
+  addCampProps(scene, { x: 0, z: 0 }, {
+    rng, count: 8, inner: 6.5, radius: 12,
+    obstacles, colliders, tickables,
+    avoid: [{ x: 0, z: 0, r: 6 }],
+  });
 
   addBoundaryObstacles(obstacles, bounds);
   addBoundarySigns(scene, bounds, null);
@@ -271,9 +283,9 @@ export function buildCity(scene, renderer) {
 
   return {
     obstacles, colliders, ladders, spawnPoints, chestSpots,
-    playerStart: { x: 0, z: 0 }, bounds,
+    playerStart: cabin.spawnInside, bounds,
     atmo,
-    particles: [embers, dust],
+    particles: [embers, dust, ...tickables],
   };
 }
 

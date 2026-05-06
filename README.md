@@ -38,6 +38,13 @@ step. Just run a tiny static server and open it in a browser.
 - **Dynamic crosshair** that opens up while moving / firing / mid‑air
 - **Hill terrain** in Forest and Mountain (player + enemies + chests follow it)
 - **Minimap** in the top‑left + **controls panel** on the right side
+- **Player home base** — every map drops you inside a log cabin you can
+  walk into, with a pitched roof, chimney, lit windows, a bed, and a table
+  with a lantern. Around it: a small camp of campfires (with flickering
+  light), tents, log seats, supply crates, lantern posts, and log piles.
+- **Consistent spawn** — you always start at the same spot on each map,
+  facing out through the open doorway. The spawn is run through a
+  collision check so you never end up clipped into a wall.
 
 ## How to run
 
@@ -113,7 +120,7 @@ shooter-game/
    │  └─ particles.js  # dust / snow / leaves / embers
    └─ maps/
       ├─ index.js      # routes mapId -> builder
-      ├─ shared.js     # ground helpers, terrain helper, atmosphere helper
+      ├─ shared.js     # ground/terrain/atmosphere helpers + cabin + camp props
       ├─ city.js
       ├─ forest.js
       ├─ archipelago.js

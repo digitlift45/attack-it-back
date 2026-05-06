@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns } from './shared.js';
+import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
 import { createDust, createLeaves } from '../effects/particles.js';
@@ -96,16 +96,30 @@ export function buildSwamp(scene, renderer) {
   addBoundaryObstacles(obstacles, bounds);
   addBoundarySigns(scene, bounds, (x, z) => Math.max(0.1, swampHeight(x, z)));
 
+  // Player home: a stilted shack in the central clearing, with a small camp.
+  // We fix the floor at +0.4 so it sits above the water.
+  const cabinGroundFn = () => 0.4;
+  const cabin = addCabin(scene, 0, 0, { facing: 0, groundHeight: cabinGroundFn });
+  obstacles.push(...cabin.obstacles);
+  colliders.push(...cabin.colliders);
+  const tickables = [];
+  addCampProps(scene, { x: 0, z: 0 }, {
+    rng, count: 7, inner: 7, radius: 16,
+    groundHeight: cabinGroundFn,
+    obstacles, colliders, tickables,
+    avoid: [{ x: 0, z: 0, r: 6 }],
+  });
+
   // Swarm of fireflies/bugs
   const bugs = createDust(scene, { count: 400, radius: 100, color: 0xaaffaa, size: 0.08 });
   const murkyLeaves = createLeaves(scene, { count: 300, radius: 100, top: 12 });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
-    playerStart: { x: 0, z: 0 }, bounds,
-    getGroundHeight: (x, z) => Math.max(0.1, swampHeight(x, z)), // player walks on water surface or ground
+    playerStart: cabin.spawnInside, bounds,
+    getGroundHeight: (x, z) => Math.max(0.1, swampHeight(x, z)),
     atmo,
     water,
-    particles: [bugs, murkyLeaves],
+    particles: [bugs, murkyLeaves, ...tickables],
   };
 }

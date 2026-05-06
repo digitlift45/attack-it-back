@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns } from './shared.js';
+import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
 import { createSnow, createDust } from '../effects/particles.js';
@@ -81,7 +81,17 @@ export function buildMountain(scene, renderer) {
     colliders.push(trunk, pine);
   }
 
-  addCabin(scene, obstacles, colliders, 0, 6, mountainHeight(0, 6));
+  // Player home: a log cabin in the central clearing, surrounded by a camp.
+  const cabin = addCabin(scene, 0, 0, { facing: 0, groundHeight: mountainHeight });
+  obstacles.push(...cabin.obstacles);
+  colliders.push(...cabin.colliders);
+  const tickables = [];
+  addCampProps(scene, { x: 0, z: 0 }, {
+    rng, count: 9, inner: 7, radius: 18,
+    groundHeight: mountainHeight,
+    obstacles, colliders, tickables,
+    avoid: [{ x: 0, z: 0, r: 6 }],
+  });
 
   for (let i = 0; i < 40; i++) {
     const a = (i / 40) * Math.PI * 2;
@@ -104,10 +114,10 @@ export function buildMountain(scene, renderer) {
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
-    playerStart: { x: 0, z: -2 }, bounds,
+    playerStart: cabin.spawnInside, bounds,
     getGroundHeight: mountainHeight,
     atmo,
-    particles: [snow, dust],
+    particles: [snow, dust, ...tickables],
   };
 }
 
@@ -134,26 +144,3 @@ function addPeak(scene, obstacles, colliders, x, z, baseR, height, groundY = 0) 
   colliders.push(stone);
 }
 
-function addCabin(scene, obstacles, colliders, x, z, groundY = 0) {
-  const wood = new THREE.MeshStandardMaterial({ color: 0x6b3a18, roughness: 1 });
-  const roof = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 });
-
-  const w = 5, d = 4, h = 2.2;
-  const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wood);
-  body.position.set(x, groundY + h/2, z);
-  body.castShadow = true;
-  body.receiveShadow = true;
-  scene.add(body);
-
-  const roofMesh = new THREE.Mesh(
-    new THREE.ConeGeometry(Math.sqrt(w*w + d*d) / 2, 1.6, 4),
-    roof
-  );
-  roofMesh.rotation.y = Math.PI / 4;
-  roofMesh.position.set(x, groundY + h + 0.8, z);
-  roofMesh.castShadow = true;
-  scene.add(roofMesh);
-
-  obstacles.push(aabbFromBox(x, z, w, d));
-  colliders.push(body, roofMesh);
-}

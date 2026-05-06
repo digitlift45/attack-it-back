@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns } from './shared.js';
+import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { createDust, createEmbers } from '../effects/particles.js';
 import { createWater } from '../effects/water.js';
@@ -102,16 +102,30 @@ export function buildVolcano(scene, renderer) {
   addBoundaryObstacles(obstacles, bounds);
   addBoundarySigns(scene, bounds, (x, z) => Math.max(-1.5, volcanoHeight(x, z)));
 
+  // Player home: a basecamp cabin on the crater rim, door facing the lava.
+  const cabinX = 0, cabinZ = 30;
+  const groundFn = (x, z) => Math.max(-1.5, volcanoHeight(x, z));
+  const cabin = addCabin(scene, cabinX, cabinZ, { facing: Math.PI, groundHeight: groundFn });
+  obstacles.push(...cabin.obstacles);
+  colliders.push(...cabin.colliders);
+  const tickables = [];
+  addCampProps(scene, { x: cabinX, z: cabinZ }, {
+    rng, count: 7, inner: 7, radius: 16,
+    groundHeight: groundFn,
+    obstacles, colliders, tickables,
+    avoid: [{ x: cabinX, z: cabinZ, r: 6 }],
+  });
+
   const embers = createEmbers(scene, { count: 800, radius: 100 });
   const ash = createDust(scene, { count: 600, radius: 100, color: 0x332222, opacity: 0.8 });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
-    playerStart: { x: 0, z: 30 }, // start on the rim, looking at the lake
+    playerStart: cabin.spawnInside,
     bounds,
-    getGroundHeight: (x, z) => Math.max(-1.5, volcanoHeight(x, z)),
+    getGroundHeight: groundFn,
     atmo,
     water: lava,
-    particles: [embers, ash],
+    particles: [embers, ash, ...tickables],
   };
 }

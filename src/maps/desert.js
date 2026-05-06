@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, getCautionMaterial } from './shared.js';
+import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, getCautionMaterial, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { createDust } from '../effects/particles.js';
 
@@ -116,14 +116,26 @@ export function buildDesert(scene, renderer) {
   addBoundaryObstacles(obstacles, bounds);
   addBoundarySigns(scene, bounds, desertHeight);
 
+  // Player home: a desert outpost cabin in a flat clearing.
+  const cabin = addCabin(scene, 0, 0, { facing: 0, groundHeight: desertHeight });
+  obstacles.push(...cabin.obstacles);
+  colliders.push(...cabin.colliders);
+  const tickables = [];
+  addCampProps(scene, { x: 0, z: 0 }, {
+    rng, count: 8, inner: 7, radius: 17,
+    groundHeight: desertHeight,
+    obstacles, colliders, tickables,
+    avoid: [{ x: 0, z: 0, r: 6 }],
+  });
+
   // Blowing sand/dust
   const sand = createDust(scene, { count: 800, radius: 100, color: 0xffd0aa, opacity: 0.6 });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
-    playerStart: { x: 0, z: 0 }, bounds,
+    playerStart: cabin.spawnInside, bounds,
     getGroundHeight: desertHeight,
     atmo,
-    particles: [sand],
+    particles: [sand, ...tickables],
   };
 }

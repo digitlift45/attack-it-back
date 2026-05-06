@@ -10,7 +10,7 @@ import { buildCharacter } from './character.js';
 import { createComposer } from './postfx.js';
 import { tickWind, clearWind } from './effects/wind.js';
 import { createMenuScene } from './menuScene.js';
-import { rand, randInt, clamp, dist2, moveWithCollision, collidesCircleAabb } from './util.js';
+import { rand, randInt, clamp, dist2, moveWithCollision, collidesCircleAabb, findClearSpawn } from './util.js';
 
 // Global persistent state
 const persist = {
@@ -421,9 +421,17 @@ function buildWorld(mapId) {
   state.spawnPoints = m.spawnPoints.filter(p => !collidesCircleAabb(p.x, state.getGroundHeight(p.x, p.z), p.z, 0.6, state.obstacles));
   const validChestSpots = m.chestSpots.filter(p => !collidesCircleAabb(p.x, state.getGroundHeight(p.x, p.z), p.z, 0.8, state.obstacles));
 
-  // Position player at terrain height
-  const startY = state.getGroundHeight(m.playerStart.x, m.playerStart.z);
-  state.camera.position.set(m.playerStart.x, startY + state.player.height, m.playerStart.z);
+  // Position player at terrain height. We run the requested spawn through
+  // `findClearSpawn` so the player can never end up clipped inside a wall —
+  // if the spot is blocked we spiral outward and pick the nearest clear one.
+  const safeStart = findClearSpawn(m.playerStart, state.bounds, state.obstacles);
+  state.playerStart = safeStart;
+  const startY = state.getGroundHeight(safeStart.x, safeStart.z);
+  state.camera.position.set(safeStart.x, startY + state.player.height, safeStart.z);
+  // Face the open doorway (the cabin tells us its yaw via playerStart.facing)
+  // so the spawn feels intentional and consistent across runs.
+  state.camera.rotation.set(0, m.playerStart.facing ?? 0, 0);
+  state.camera.up.set(0, 1, 0);
 
   // Drop chests, snapping each to the terrain height under it.
   const chestCount = clamp(validChestSpots.length, 6, 14);

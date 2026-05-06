@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, getCautionMaterial } from './shared.js';
+import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, getCautionMaterial, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
 import { createDust, createLeaves } from '../effects/particles.js';
@@ -128,15 +128,29 @@ export function buildRuins(scene, renderer) {
   addBoundaryObstacles(obstacles, bounds);
   addBoundarySigns(scene, bounds, ruinsHeight);
 
+  // Player home: an explorer's cabin set up among the ruins, door facing the
+  // central altar so the player can see the objective on spawn.
+  const cabinX = 0, cabinZ = 25;
+  const cabin = addCabin(scene, cabinX, cabinZ, { facing: Math.PI, groundHeight: ruinsHeight });
+  obstacles.push(...cabin.obstacles);
+  colliders.push(...cabin.colliders);
+  const tickables = [];
+  addCampProps(scene, { x: cabinX, z: cabinZ }, {
+    rng, count: 8, inner: 7, radius: 16,
+    groundHeight: ruinsHeight,
+    obstacles, colliders, tickables,
+    avoid: [{ x: cabinX, z: cabinZ, r: 6 }],
+  });
+
   const dust = createDust(scene, { count: 600, radius: 100, color: 0x88aabb });
-  const leaves = createLeaves(scene, { count: 300, radius: 100, top: 18 }); // few leaves blowing through ruins
+  const leaves = createLeaves(scene, { count: 300, radius: 100, top: 18 });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
-    playerStart: { x: 0, z: 25 },
+    playerStart: cabin.spawnInside,
     bounds,
     getGroundHeight: ruinsHeight,
     atmo,
-    particles: [dust, leaves],
+    particles: [dust, leaves, ...tickables],
   };
 }

@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns } from './shared.js';
+import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
 import { createDust, createLeaves } from '../effects/particles.js';
+import { createWater } from '../effects/water.js';
 
 function forestHeight(x, z) {
   const r = Math.sqrt(x * x + z * z);
@@ -52,11 +53,11 @@ export function buildForest(scene, renderer) {
   water.setSun(atmo.sunDir, new THREE.Color(0xccffcc));
   water.water.position.y = -0.5; // Only fills the depressed center
 
-  // Trees, with a cleared central plaza
+  // Trees, with a cleared central plaza for the cabin + camp.
   for (let i = 0; i < 400; i++) {
     const x = (rng() - 0.5) * SIZE;
     const z = (rng() - 0.5) * SIZE;
-    if (x*x + z*z < 12*12) continue;
+    if (x*x + z*z < 22*22) continue;
     const groundY = forestHeight(x, z);
 
     const trunkH = 2.5 + rng() * 2.5;
@@ -135,15 +136,27 @@ export function buildForest(scene, renderer) {
   addBoundaryObstacles(obstacles, bounds);
   addBoundarySigns(scene, bounds, forestHeight);
 
+  // Player home: a cabin in the central plaza, with a small camp around it.
+  const cabin = addCabin(scene, 0, 0, { facing: 0, groundHeight: forestHeight });
+  obstacles.push(...cabin.obstacles);
+  colliders.push(...cabin.colliders);
+  const tickables = [];
+  addCampProps(scene, { x: 0, z: 0 }, {
+    rng, count: 9, inner: 7, radius: 18,
+    groundHeight: forestHeight,
+    obstacles, colliders, tickables,
+    avoid: [{ x: 0, z: 0, r: 6 }, { x: cabin.doorOutside.x, z: cabin.doorOutside.z, r: 2.5 }],
+  });
+
   // Atmospheric particles
   const dust   = createDust(scene,   { count: 600, radius: 100, color: 0xfff4e0 });
   const leaves = createLeaves(scene, { count: 400, radius: 100, top: 16 });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
-    playerStart: { x: 0, z: 0 }, bounds,
+    playerStart: cabin.spawnInside, bounds,
     getGroundHeight: forestHeight,
-    atmo,
-    particles: [dust, leaves],
+    atmo, water,
+    particles: [dust, leaves, ...tickables],
   };
 }
