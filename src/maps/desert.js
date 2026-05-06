@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, getCautionMaterial, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
-import { createDust } from '../effects/particles.js';
+import { createDust, createPixels } from '../effects/particles.js';
 
 function desertHeight(x, z) {
   const r = Math.sqrt(x * x + z * z);
@@ -130,12 +130,16 @@ export function buildDesert(scene, renderer) {
 
   // Blowing sand/dust
   const sand = createDust(scene, { count: 800, radius: 100, color: 0xffd0aa, opacity: 0.6 });
+  const pixels = createPixels(scene, {
+    count: 1500, radius: 100, height: 14,
+    colors: [0xffeac0, 0xffc080, 0xffe6a0, 0xffffff],
+  });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
     playerStart: cabin.spawnInside, bounds,
     getGroundHeight: desertHeight,
     atmo,
-    particles: [sand, ...tickables],
+    particles: [sand, pixels, ...tickables],
   };
 }

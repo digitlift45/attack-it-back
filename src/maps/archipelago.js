@@ -3,7 +3,7 @@ import { applyAtmosphere, addBoundaryObstacles, addBoundarySigns, addCabin, addC
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
 import { createWater } from '../effects/water.js';
-import { createDust } from '../effects/particles.js';
+import { createDust, createPixels } from '../effects/particles.js';
 
 export function buildArchipelago(scene, renderer) {
   const atmo = applyAtmosphere(scene, renderer, 'archipelago');
@@ -132,13 +132,17 @@ export function buildArchipelago(scene, renderer) {
 
   // Sea spray / haze drifting over the water
   const dust = createDust(scene, { count: 800, radius: 100, color: 0xeaf6ff });
+  const pixels = createPixels(scene, {
+    count: 1500, radius: 100, height: 14,
+    colors: [0xffffff, 0xa0e0ff, 0xffe6c0],
+  });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
     playerStart: cabin.spawnInside, bounds,
     atmo,
     water,
-    particles: [dust, ...tickables],
+    particles: [dust, pixels, ...tickables],
   };
 }
 

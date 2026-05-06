@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
-import { createDust, createEmbers } from '../effects/particles.js';
+import { createDust, createEmbers, createPixels } from '../effects/particles.js';
 import { createWater } from '../effects/water.js';
 
 function volcanoHeight(x, z) {
@@ -128,6 +128,10 @@ export function buildVolcano(scene, renderer) {
 
   const embers = createEmbers(scene, { count: 800, radius: 100 });
   const ash = createDust(scene, { count: 600, radius: 100, color: 0x332222, opacity: 0.8 });
+  const pixels = createPixels(scene, {
+    count: 1500, radius: 100, height: 18,
+    colors: [0xff8844, 0xffaa44, 0xff5522, 0xffe0a0],
+  });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
@@ -136,6 +140,6 @@ export function buildVolcano(scene, renderer) {
     getGroundHeight: groundFn,
     atmo,
     water: lava,
-    particles: [embers, ash, ...tickables],
+    particles: [embers, ash, pixels, ...tickables],
   };
 }

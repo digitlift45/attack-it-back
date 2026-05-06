@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { addGround, applyAtmosphere, addBoundaryObstacles, addBoundarySigns, getCautionMaterial, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
-import { createEmbers, createDust } from '../effects/particles.js';
+import { createEmbers, createDust, createPixels } from '../effects/particles.js';
 
 export function buildCity(scene, renderer) {
   const atmo = applyAtmosphere(scene, renderer, 'city');
@@ -280,12 +280,16 @@ export function buildCity(scene, renderer) {
 
   const embers = createEmbers(scene, { count: 350, radius: 80 });
   const dust   = createDust(scene,   { count: 400, radius: 80, color: 0xffd6a0 });
+  const pixels = createPixels(scene, {
+    count: 1800, radius: 90, height: 18,
+    colors: [0xff7aa3, 0x66e1ff, 0xffd86b, 0xa080ff, 0xffffff],
+  });
 
   return {
     obstacles, colliders, ladders, spawnPoints, chestSpots,
     playerStart: cabin.spawnInside, bounds,
     atmo,
-    particles: [embers, dust, ...tickables],
+    particles: [embers, dust, pixels, ...tickables],
   };
 }
 

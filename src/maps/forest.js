@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
-import { createDust, createLeaves } from '../effects/particles.js';
+import { createDust, createLeaves, createPixels } from '../effects/particles.js';
 import { createWater } from '../effects/water.js';
 
 // A small circular pond sits to the south-east of the cabin clearing. The
@@ -168,12 +168,17 @@ export function buildForest(scene, renderer) {
   // Atmospheric particles
   const dust   = createDust(scene,   { count: 600, radius: 100, color: 0xfff4e0 });
   const leaves = createLeaves(scene, { count: 400, radius: 100, top: 16 });
+  // Tiny pixel sparkles drifting through the woods.
+  const pixels = createPixels(scene, {
+    count: 1500, radius: 90, height: 14,
+    colors: [0xffffaa, 0xa0e0a0, 0xffe6c0, 0xffffff],
+  });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
     playerStart: cabin.spawnInside, bounds,
     getGroundHeight: forestHeight,
     atmo, water,
-    particles: [dust, leaves, ...tickables],
+    particles: [dust, leaves, pixels, ...tickables],
   };
 }

@@ -371,7 +371,9 @@ function disposeScene() {
 function resetWorld() {
   if (state.renderer) state.renderer.dispose();
   state.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-  state.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // Cap at 3 so HiDPI screens get a sharper image with tinier pixels — but
+  // not so high that integrated GPUs choke on a 4K backing buffer.
+  state.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
   state.renderer.setSize(window.innerWidth, window.innerHeight, false);
   state.renderer.shadowMap.enabled = true;
   state.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1677,7 +1679,7 @@ function initCharPreview() {
   if (!container) return;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
   renderer.setSize(container.clientWidth, container.clientHeight, false);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;

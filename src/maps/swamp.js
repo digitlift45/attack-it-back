@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
-import { createDust, createLeaves } from '../effects/particles.js';
+import { createDust, createLeaves, createPixels } from '../effects/particles.js';
 import { createWater } from '../effects/water.js';
 
 function swampHeight(x, z) {
@@ -115,6 +115,10 @@ export function buildSwamp(scene, renderer) {
   // Swarm of fireflies/bugs
   const bugs = createDust(scene, { count: 400, radius: 100, color: 0xaaffaa, size: 0.08 });
   const murkyLeaves = createLeaves(scene, { count: 300, radius: 100, top: 12 });
+  const pixels = createPixels(scene, {
+    count: 1500, radius: 100, height: 12,
+    colors: [0xaaffaa, 0x88dd99, 0xc0ffcc, 0xffffaa],
+  });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
@@ -122,6 +126,6 @@ export function buildSwamp(scene, renderer) {
     getGroundHeight: (x, z) => Math.max(0.1, swampHeight(x, z)),
     atmo,
     water,
-    particles: [bugs, murkyLeaves, ...tickables],
+    particles: [bugs, murkyLeaves, pixels, ...tickables],
   };
 }

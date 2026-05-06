@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, getCautionMaterial, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
-import { createDust, createLeaves } from '../effects/particles.js';
+import { createDust, createLeaves, createPixels } from '../effects/particles.js';
 
 function ruinsHeight(x, z) {
   const r = Math.hypot(x, z);
@@ -144,6 +144,10 @@ export function buildRuins(scene, renderer) {
 
   const dust = createDust(scene, { count: 600, radius: 100, color: 0x88aabb });
   const leaves = createLeaves(scene, { count: 300, radius: 100, top: 18 });
+  const pixels = createPixels(scene, {
+    count: 1500, radius: 100, height: 16,
+    colors: [0x88ccff, 0xc0c8d0, 0xffe6a0, 0xffffff],
+  });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
@@ -151,6 +155,6 @@ export function buildRuins(scene, renderer) {
     bounds,
     getGroundHeight: ruinsHeight,
     atmo,
-    particles: [dust, leaves, ...tickables],
+    particles: [dust, leaves, pixels, ...tickables],
   };
 }

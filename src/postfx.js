@@ -16,7 +16,7 @@ import { GTAOPass }       from 'three/addons/postprocessing/GTAOPass.js';
 export function createComposer(renderer, scene, camera) {
   const w = renderer.domElement.clientWidth || window.innerWidth;
   const h = renderer.domElement.clientHeight || window.innerHeight;
-  const dpr = Math.min(window.devicePixelRatio, 2);
+  const dpr = Math.min(window.devicePixelRatio, 3);
 
   const composer = new EffectComposer(renderer);
   composer.setPixelRatio(dpr);

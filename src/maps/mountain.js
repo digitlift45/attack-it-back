@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { applyAtmosphere, addBoundaryObstacles, addTerrain, addBoundarySigns, addCabin, addCampProps } from './shared.js';
 import { aabbFromBox, makeRng } from '../util.js';
 import { applyWind } from '../effects/wind.js';
-import { createSnow, createDust } from '../effects/particles.js';
+import { createSnow, createDust, createPixels } from '../effects/particles.js';
 
 function mountainHeight(x, z) {
   const r = Math.sqrt(x * x + z * z);
@@ -111,13 +111,21 @@ export function buildMountain(scene, renderer) {
   // Snow + a touch of dust drifting around
   const snow = createSnow(scene, { count: 1800, radius: 120, top: 40 });
   const dust = createDust(scene, { count: 200, radius: 60, color: 0xeef4ff });
+  const pixels = createPixels(scene, {
+    count: 1500, radius: 100, height: 18,
+    colors: [0xffffff, 0xc0e0ff, 0xeaf4ff],
+  });
+  const pixels = createPixels(scene, {
+    count: 1400, radius: 100, height: 16,
+    colors: [0xffffff, 0xc0e0ff, 0xeaf4ff],
+  });
 
   return {
     obstacles, colliders, spawnPoints, chestSpots,
     playerStart: cabin.spawnInside, bounds,
     getGroundHeight: mountainHeight,
     atmo,
-    particles: [snow, dust, ...tickables],
+    particles: [snow, dust, pixels, ...tickables],
   };
 }
 

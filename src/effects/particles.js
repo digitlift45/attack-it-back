@@ -183,6 +183,84 @@ export function createLeaves(scene, opts = {}) {
   };
 }
 
+// --------------------------------------------------------------- PIXELS ---
+// Tiny crisp square particles drifting through the air. Uses a nearest-
+// filtered square texture so each particle reads as an actual pixel rather
+// than the soft glow that the dust/embers use. Cheap to render in big
+// counts because it's still just a single Points draw call.
+let _squareTex = null;
+function getSquareTexture() {
+  if (_squareTex) return _squareTex;
+  const size = 8;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, size, size);
+  _squareTex = new THREE.CanvasTexture(c);
+  _squareTex.colorSpace = THREE.SRGBColorSpace;
+  _squareTex.magFilter = THREE.NearestFilter;
+  _squareTex.minFilter = THREE.NearestFilter;
+  return _squareTex;
+}
+
+export function createPixels(scene, opts = {}) {
+  const count   = opts.count   ?? 1500;
+  const radius  = opts.radius  ?? 90;
+  const top     = opts.height  ?? 14;
+  const colors  = opts.colors  ?? [0xffffff, 0xffeaa0, 0xa0ddff, 0xffd0c0];
+  const size    = opts.size    ?? 0.05;
+  const opacity = opts.opacity ?? 0.75;
+
+  const positions = new Float32Array(count * 3);
+  const tints     = new Float32Array(count * 3);
+  const phases    = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    positions[3*i+0] = (Math.random() - 0.5) * radius * 2;
+    positions[3*i+1] = Math.random() * top;
+    positions[3*i+2] = (Math.random() - 0.5) * radius * 2;
+    const c = new THREE.Color(colors[Math.floor(Math.random() * colors.length)]);
+    tints[3*i+0] = c.r; tints[3*i+1] = c.g; tints[3*i+2] = c.b;
+    phases[i] = Math.random() * Math.PI * 2;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color',    new THREE.BufferAttribute(tints, 3));
+
+  const mat = new THREE.PointsMaterial({
+    vertexColors: true,
+    size,
+    map: getSquareTexture(),
+    transparent: true,
+    opacity,
+    depthWrite: false,
+    sizeAttenuation: true,
+    blending: THREE.AdditiveBlending,
+  });
+  const points = new THREE.Points(geo, mat);
+  points.frustumCulled = false;
+  scene.add(points);
+
+  return {
+    points,
+    tick(dt, playerPos) {
+      for (let i = 0; i < count; i++) {
+        positions[3*i+1] += dt * 0.10 * (1 + Math.sin(phases[i]) * 0.3);
+        positions[3*i+0] += Math.sin(phases[i] + positions[3*i+1] * 0.3) * dt * 0.06;
+        positions[3*i+2] += Math.cos(phases[i] + positions[3*i+1] * 0.3) * dt * 0.06;
+        if (positions[3*i+1] > top || Math.abs(positions[3*i+0]) > radius || Math.abs(positions[3*i+2]) > radius) {
+          positions[3*i+0] = (Math.random() - 0.5) * radius * 2;
+          positions[3*i+1] = Math.random() * 0.5;
+          positions[3*i+2] = (Math.random() - 0.5) * radius * 2;
+        }
+      }
+      if (playerPos) points.position.set(playerPos.x, 0, playerPos.z);
+      geo.attributes.position.needsUpdate = true;
+    },
+  };
+}
+
 // --------------------------------------------------------------- EMBERS ---
 export function createEmbers(scene, opts = {}) {
   const count  = opts.count  ?? 180;
