@@ -32,8 +32,10 @@ export function buildSwamp(scene, renderer) {
     waveSpeed:    0.5,
   });
   water.setSun(atmo.sunDir, new THREE.Color(0x88aa88));
-  // Place water slightly above average ground level
   water.water.position.y = 0.1;
+  // The swamp's "water" is ambient ankle-deep murk that covers the whole map;
+  // walking on it shouldn't deal damage, only proper deep water/lava does.
+  water.damaging = false;
 
   const obstacles = [];
   const colliders = [];

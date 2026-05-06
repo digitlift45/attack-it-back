@@ -22,9 +22,11 @@ export function buildVolcano(scene, renderer) {
   // Dark basalt/obsidian rock
   addTerrain(scene, SIZE * 1.6, 0x1a1111, volcanoHeight, { segments: 180, roughness: 0.9, flatShading: true });
 
-  // Lava lake in the crater
-  const lava = createWater(scene, SIZE * 1.6, {
-    segments: 80,
+  // Lava lake — sized to fit inside the crater so it only damages the player
+  // when they actually step into the central pool, not when standing on the
+  // outer rim where terrain noise can also dip low.
+  const lava = createWater(scene, 50, {
+    segments: 40,
     colorShallow: new THREE.Color(0xff4400),
     colorDeep:    new THREE.Color(0xaa1100),
     foamColor:    new THREE.Color(0xffaa00),

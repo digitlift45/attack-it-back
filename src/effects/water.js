@@ -110,7 +110,10 @@ export function createWater(scene, size = 220, opts = {}) {
   scene.add(water);
 
   return {
-    water, mat,
+    water, mat, size,
+    // Maps can flip this to opt out of drowning damage (e.g. ambient swamp
+    // murk that's just visual). Defaults to true so existing maps still work.
+    damaging: true,
     setSun(dir, color) {
       mat.uniforms.uSunDir.value.copy(dir);
       if (color) mat.uniforms.uSunColor.value.copy(color);

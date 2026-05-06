@@ -1484,20 +1484,34 @@ function loop(t) {
     }
   }
 
-  // Drowning / Lava damage
-  if (state.water) {
+  // Drowning / Lava damage. We only count the player as "in" the water/lava
+  // when they're (a) actually submerged below the surface AND (b) standing
+  // within the water plane's xz extent. Without (b) any low spot anywhere on
+  // the map would trigger damage, which is what was happening on swamp/forest.
+  if (state.water?.damaging !== false && state.water) {
     const isLava = state.mapId === 'volcano';
-    const waterY = state.water.water.position.y;
-    // Check if the player's feet are touching the water/lava
+    const wMesh  = state.water.water;
+    const waterY = wMesh.position.y;
     const playerFeetY = state.camera.position.y - state.player.height;
-    
-    if (playerFeetY <= waterY + 0.1) {
+
+    const halfSize = (state.water.size ?? Infinity) / 2;
+    const dx = state.camera.position.x - wMesh.position.x;
+    const dz = state.camera.position.z - wMesh.position.z;
+    const inXZ = Math.abs(dx) <= halfSize && Math.abs(dz) <= halfSize;
+
+    // Lava damages on any contact with the surface; water requires the player
+    // to actually be submerged a bit so wet ground at exactly the water level
+    // doesn't constantly tick down their HP.
+    const submerged = waterY - playerFeetY;
+    const minSubmersion = isLava ? 0.0 : 0.2;
+
+    if (inXZ && submerged >= minSubmersion) {
       if (isLava) {
         drownVignette.classList.add('lava');
-        state.player.damage(50 * dt); // Lava melts you fast
+        state.player.damage(50 * dt);
       } else {
         drownVignette.classList.remove('lava');
-        state.player.damage(15 * dt); // Water drowns you slower
+        state.player.damage(15 * dt);
       }
       drownVignette.style.opacity = '1';
     } else {
