@@ -35,10 +35,18 @@ export function buildVolcano(scene, renderer) {
   lava.water.position.y = -1.5;
   lava.setSun(atmo.sunDir, new THREE.Color(0xff3300));
   
-  // Point light for the lava glow
-  const lavaLight = new THREE.PointLight(0xff4400, 2.0, 50);
-  lavaLight.position.set(0, 2, 0);
-  scene.add(lavaLight);
+  // Lava glow — three large warm point lights spread across the crater so the
+  // rim and cabin are illuminated, not just the center of the lake.
+  const lavaPositions = [
+    { x: 0,   z: 0,  intensity: 3.2, distance: 80 },
+    { x: 14,  z: 0,  intensity: 2.0, distance: 70 },
+    { x: -14, z: 0,  intensity: 2.0, distance: 70 },
+  ];
+  for (const lp of lavaPositions) {
+    const light = new THREE.PointLight(0xff5520, lp.intensity, lp.distance, 1.6);
+    light.position.set(lp.x, 2, lp.z);
+    scene.add(light);
+  }
 
   const obstacles = [];
   const colliders = [];

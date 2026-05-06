@@ -168,13 +168,13 @@ export const ATMOSPHERES = {
     cloudYMin: 40, cloudYMax: 90,
   },
   volcano: {
-    elevation: -2, azimuth: 180, // sun just below horizon
-    turbidity: 20, rayleigh: 6, mieCoeff: 0.05, mieG: 0.9,
-    sunIntensity: 0.5, sunColor: 0xff3311,
-    hemiSkyColor: 0x440000, hemiGroundColor: 0xff2200, hemiIntensity: 0.6,
-    fogColor: 0x330000, fogNear: 25, fogFar: 160, // dark red
-    exposure: 0.50,
-    cloudCount: 35, cloudTint: 0xff2200, cloudOpacity: 0.95, cloudSpeed: 0.4,
+    elevation: 8, azimuth: 180,    // sun just above horizon — angry red sunset
+    turbidity: 14, rayleigh: 4, mieCoeff: 0.03, mieG: 0.85,
+    sunIntensity: 2.4, sunColor: 0xff7733,
+    hemiSkyColor: 0xaa4422, hemiGroundColor: 0xff5522, hemiIntensity: 1.6,
+    fogColor: 0x552211, fogNear: 50, fogFar: 260,
+    exposure: 0.95,
+    cloudCount: 30, cloudTint: 0xff8855, cloudOpacity: 0.85, cloudSpeed: 0.4,
     cloudYMin: 40, cloudYMax: 100,
   },
   ruins: {
