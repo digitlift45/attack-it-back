@@ -119,6 +119,38 @@ button { cursor: pointer; font-family: inherit; }
   pointer-events: none;
 }
 #char-preview canvas { display: block; width: 100%; height: 100%; position: relative; z-index: 1; }
+.name-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.name-row label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: #9aa3b0;
+  font-weight: 700;
+}
+.name-row input {
+  background: rgba(15, 19, 28, 0.7);
+  border: 1px solid rgba(255, 216, 107, 0.4);
+  border-radius: 8px;
+  color: #ffd86b;
+  font: 700 16px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  outline: none;
+  width: 200px;
+  text-align: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.name-row input::placeholder { color: rgba(255, 216, 107, 0.45); }
+.name-row input:focus {
+  border-color: #ffd86b;
+  box-shadow: 0 0 0 3px rgba(255, 216, 107, 0.18);
+}
+
 .stats-tag {
   display: inline-block;
   font-size: 14px;
@@ -519,9 +551,28 @@ button { cursor: pointer; font-family: inherit; }
   backdrop-filter: blur(6px);
 }
 .hud-stat { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
+.hud-stat.name { min-width: 96px; }
 .hud-stat-label { font-size: 10px; letter-spacing: 0.15em; color: #9aa3b0; }
 .hud-stat span:last-child, .hud-stat span#wave-num, .hud-stat span#kill-count, .hud-stat span#enemy-count {
   font-weight: 800; font-size: 18px;
+}
+.hud-stat #player-name-hud {
+  color: #ffd86b;
+  font-weight: 800;
+  font-size: 18px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-line {
+  margin: 6px 0 14px;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: #ffd86b;
+  text-transform: uppercase;
+  font-weight: 700;
 }
 
 #inventory-bar {

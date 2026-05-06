@@ -22,6 +22,8 @@ const persist = {
   set shades(v) { localStorage.setItem('survive_shades', v); },
   get hat() { return localStorage.getItem('survive_hat') === 'true'; },
   set hat(v) { localStorage.setItem('survive_hat', v); },
+  get playerName() { return (localStorage.getItem('survive_name') || 'Survivor').slice(0, 20); },
+  set playerName(v) { localStorage.setItem('survive_name', String(v ?? '').slice(0, 20)); },
 };
 
 const settings = {
@@ -147,6 +149,31 @@ const homeCoins = document.getElementById('home-coins');
 const btnBuyHp = document.getElementById('buy-hp');
 const btnBuyShades = document.getElementById('buy-shades');
 const btnBuyHat = document.getElementById('buy-hat');
+
+// ----- Player name (persisted across sessions) -----
+const nameInput   = document.getElementById('player-name-input');
+const nameHud     = document.getElementById('player-name-hud');
+const nameGameOver = document.getElementById('game-over-name');
+const namePause   = document.getElementById('pause-name');
+
+function applyPlayerName() {
+  const n = persist.playerName || 'Survivor';
+  if (nameHud)      nameHud.textContent      = n;
+  if (nameGameOver) nameGameOver.textContent = n;
+  if (namePause)    namePause.textContent    = n;
+}
+
+if (nameInput) {
+  nameInput.value = persist.playerName === 'Survivor' ? '' : persist.playerName;
+  nameInput.placeholder = 'Survivor';
+  // Save on every keystroke (kept short and free of leading/trailing spaces).
+  nameInput.addEventListener('input', () => {
+    const v = nameInput.value.trim().slice(0, 20) || 'Survivor';
+    persist.playerName = v;
+    applyPlayerName();
+  });
+}
+applyPlayerName();
 
 function updateMenuUI() {
   if (homeCoins) homeCoins.textContent = persist.coins;

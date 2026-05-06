@@ -27,6 +27,10 @@
         <div class="hero-text">
           <h1 class="title">ATTACK IT BACK</h1>
           <p class="subtitle">Pick a map. Find chests. Stay alive.</p>
+          <div class="name-row">
+            <label for="player-name-input">PLAYER NAME</label>
+            <input id="player-name-input" type="text" maxlength="20" placeholder="Survivor" autocomplete="off" spellcheck="false" />
+          </div>
           <div class="stats-tag">
             <span id="home-coins">0</span> KILLS (COINS)
           </div>
@@ -155,6 +159,7 @@
       </div>
 
       <div id="hud-top">
+        <div class="hud-stat name"><span class="hud-stat-label">PLAYER</span><span id="player-name-hud">Survivor</span></div>
         <div class="hud-stat"><span class="hud-stat-label">WAVE</span><span id="wave-num">1</span></div>
         <div class="hud-stat"><span class="hud-stat-label">KILLS</span><span id="kill-count">0</span></div>
         <div class="hud-stat"><span class="hud-stat-label">ENEMIES</span><span id="enemy-count">0</span></div>
@@ -211,6 +216,7 @@
     <div id="pause-menu" class="overlay hidden">
       <div class="overlay-card">
         <h2>PAUSED</h2>
+        <p class="player-line"><span id="pause-name">Survivor</span></p>
         <button id="btn-resume" class="big-btn">Resume</button>
         <button id="btn-settings-pause" class="big-btn ghost">Settings</button>
         <button id="btn-quit" class="big-btn ghost">Quit to Menu</button>
@@ -221,7 +227,7 @@
     <div id="game-over" class="overlay hidden">
       <div class="overlay-card">
         <h2>YOU DIED</h2>
-        <p>You survived <span id="final-wave">1</span> waves with <span id="final-kills">0</span> kills.</p>
+        <p><b id="game-over-name">Survivor</b> survived <span id="final-wave">1</span> waves with <span id="final-kills">0</span> kills.</p>
         <button id="btn-retry" class="big-btn">Try Again</button>
         <button id="btn-quit2" class="big-btn ghost">Quit to Menu</button>
       </div>
