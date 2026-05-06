@@ -164,13 +164,22 @@ function applyPlayerName() {
 }
 
 if (nameInput) {
-  nameInput.value = persist.playerName === 'Survivor' ? '' : persist.playerName;
+  // Only show a pre-filled value if the user has explicitly saved one.
+  const saved = localStorage.getItem('survive_name');
+  if (saved) nameInput.value = saved;
   nameInput.placeholder = 'Survivor';
-  // Save on every keystroke (kept short and free of leading/trailing spaces).
+
+  // Save on every keystroke, but never overwrite a saved name with the
+  // placeholder default just because the field went empty for a moment.
   nameInput.addEventListener('input', () => {
-    const v = nameInput.value.trim().slice(0, 20) || 'Survivor';
-    persist.playerName = v;
-    applyPlayerName();
+    const v = nameInput.value.trim().slice(0, 20);
+    if (v) {
+      persist.playerName = v;
+      applyPlayerName();
+    }
+    // Empty field = no save. The previously-saved name (or 'Survivor' if
+    // none) keeps showing in the HUD, so a typo or accidental clear can't
+    // wipe out what you've chosen.
   });
 }
 applyPlayerName();
